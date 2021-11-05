@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  eth-faucet:
+    build: ./
+    container_name: eth-faucet
+    ports:
+      - 9000:9000
+    command: yarn start
+    restart: always
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports: 
+      - 443:443
+      - 80:80
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs/fullchain.pem:/fullchain.pem:ro
+      - ./certs/privkey.pem:/privkey.pem:ro
+    links:
+      - eth-faucet
+    restart: always
+
+  node_exporter:
+    image: prom/node-exporter
+    container_name: node_exporter
+    ports:
+      - 9100:9100
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    restart: always
